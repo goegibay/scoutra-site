@@ -1,0 +1,10 @@
+<!-- @dsCard group="Core components" -->
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../../../styles.css">
+<style>.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}</style></head><body>
+<h3 class="ds-h3" style="margin-bottom:14px">States — 每個資料元件四態必備</h3>
+<div class="grid">
+<div class="card"><div class="label" style="margin-bottom:10px">Loading</div><div class="skeleton" style="height:14px;width:60%;margin-bottom:8px"></div><div class="skeleton" style="height:14px;width:85%;margin-bottom:8px"></div><div class="skeleton" style="height:14px;width:40%"></div></div>
+<div class="card"><div class="label" style="margin-bottom:10px">Empty</div><div class="empty-state" style="padding:20px"><div class="empty-title">No creators verified yet</div><div class="caption">本週佇列還有 249 位待驗，完成後會出現在這裡。</div><button class="btn btn-secondary btn-sm" style="margin-top:12px">View queue</button></div></div>
+<div class="card" style="grid-column:span 2"><div class="label" style="margin-bottom:10px">Error</div><div class="error-banner"><b>!</b><div>Couldn't reach the data source. Your snapshots are safe — retry in a minute.<div style="margin-top:6px"><button class="btn btn-secondary btn-sm">Retry</button></div></div></div></div>
+</div>
+</body></html>

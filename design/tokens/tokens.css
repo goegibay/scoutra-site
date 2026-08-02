@@ -1,0 +1,46 @@
+/* Scoutra design tokens — semantic first; components must not use raw hex. */
+:root {
+  /* type */
+  --font-display: "Space Grotesk", -apple-system, sans-serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  /* neutrals — white + cold gray */
+  --background: #ffffff;
+  --surface: #f8fafc;
+  --border: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --foreground: #0f172a;
+  --muted-foreground: #64748b;
+
+  /* primary — deep indigo */
+  --primary: #4338ca;
+  --primary-hover: #3730a3;
+  --primary-foreground: #ffffff;
+  --ring: #4338ca;
+  --ring-soft: rgba(67, 56, 202, .18);
+
+  /* secondary accent candidate — teal（佔位頁血統；hero Direction B 用） */
+  --accent: #0d9488;
+  --accent-soft: rgba(13, 148, 136, .12);
+
+  /* status */
+  --success: #15803d; --success-soft: #f0fdf4;
+  --warning: #b45309; --warning-soft: #fffbeb;
+  --danger:  #b91c1c; --danger-hover: #991b1b; --danger-soft: #fef2f2;
+  --info:    #1d4ed8; --info-soft: #eff6ff;
+
+  /* charts */
+  --chart-1: #4338ca; --chart-2: #0d9488; --chart-3: #b45309; --chart-4: #64748b; --chart-5: #be185d;
+
+  /* radius & spacing */
+  --radius-card: 14px;
+  --radius-control: 8px;
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+  --space-5: 24px; --space-6: 32px; --space-7: 48px; --space-8: 64px;
+
+  /* dark surface（hero Direction B／未來 dark mode 的基底） */
+  --dark-background: #0b0f19;
+  --dark-foreground: #e8e8ea;
+  --dark-muted: #9ca3af;
+  --dark-accent: #2dd4bf;
+}

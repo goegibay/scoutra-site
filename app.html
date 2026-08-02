@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scoutra — App</title>
+<link rel="stylesheet" href="design/styles.css">
+<style>
+  body { padding: 0; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 24px; }
+  header.site { border-bottom: 1px solid var(--border); }
+  header.site .wrap { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+  .logo { font-family: var(--font-display); font-weight: 700; font-size: 20px; }
+  .logo span { color: var(--primary); }
+  .login-box { max-width: 380px; margin: 96px auto; text-align: center; }
+  .g-icon { width: 18px; height: 18px; }
+  #userbar { display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--muted-foreground); }
+  .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 24px 0; }
+  @media (max-width: 760px) { .metrics { grid-template-columns: 1fr; } }
+  .filters { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .filters .btn[aria-pressed="true"] { background: var(--ring-soft); border-color: var(--primary); color: var(--primary); }
+  td.ev { max-width: 320px; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap">
+    <div class="logo">Scout<span>ra</span></div>
+    <div id="userbar" class="hidden">
+      <span id="user-email"></span>
+      <button class="btn btn-ghost btn-sm" id="signout">Sign out</button>
+    </div>
+  </div>
+</header>
+
+<!-- 登入畫面 -->
+<div id="login" class="login-box">
+  <h1 class="ds-h1" style="margin-bottom:8px">Sign in</h1>
+  <p class="caption" style="margin-bottom:24px">Early access — invited accounts only.</p>
+  <button class="btn btn-secondary" id="google-btn" style="width:100%;justify-content:center;padding:10px">
+    <svg class="g-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23z"/><path fill="#FBBC05" d="M5.84 14.1a6.6 6.6 0 0 1 0-4.2V7.06H2.18a11 11 0 0 0 0 9.88l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15A11 11 0 0 0 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+    Continue with Google
+  </button>
+  <p class="caption" id="login-msg" style="margin-top:16px"></p>
+</div>
+
+<!-- 主畫面 -->
+<div id="app" class="wrap hidden" style="padding-bottom:64px">
+  <div class="metrics">
+    <div class="card metric-card"><div class="metric-label">Verified &amp; reachable</div><div class="metric-value" id="m-usable">—</div><div class="metric-delta">tier A/B/C · email OK</div></div>
+    <div class="card metric-card"><div class="metric-label">Tier A（主題相關 ∧ 推過同類 App）</div><div class="metric-value" id="m-a">—</div><div class="metric-delta">最有價值的一層</div></div>
+    <div class="card metric-card"><div class="metric-label">Snapshot</div><div class="metric-value" id="m-date" style="font-size:20px;padding-top:8px">—</div><div class="metric-delta">niche: japanese</div></div>
+  </div>
+
+  <div class="filters">
+    <button class="btn btn-secondary btn-sm tier-filter" data-tier="" aria-pressed="true">All</button>
+    <button class="btn btn-secondary btn-sm tier-filter" data-tier="A">Tier A</button>
+    <button class="btn btn-secondary btn-sm tier-filter" data-tier="B">Tier B</button>
+    <button class="btn btn-secondary btn-sm tier-filter" data-tier="C">Tier C</button>
+  </div>
+
+  <div class="table-wrap">
+    <table class="ds">
+      <thead><tr><th>Tier</th><th>Creator</th><th>Platform</th><th>Followers</th><th>Evidence</th><th>Contact</th></tr></thead>
+      <tbody id="rows"><tr><td colspan="6"><div class="skeleton" style="height:14px;margin:20px"></div></td></tr></tbody>
+    </table>
+  </div>
+  <p class="caption" style="margin-top:10px" id="row-count"></p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+const SUPABASE_URL = "https://rkeemugzrshnhaqaabli.supabase.co";
+const SUPABASE_KEY = "sb_publishable_brwl--LBTNhBqj7YpZxzCw_8JsZerY-";
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const $ = (id) => document.getElementById(id);
+let allRows = [], activeTier = "";
+
+$("google-btn").onclick = async () => {
+  const { error } = await db.auth.signInWithOAuth({
+    provider: "google",
+    options: { redirectTo: location.origin + location.pathname },
+  });
+  if (error) $("login-msg").textContent = error.message;
+};
+$("signout").onclick = async () => { await db.auth.signOut(); location.reload(); };
+
+db.auth.onAuthStateChange(async (_event, session) => {
+  if (!session) { show(false); return; }
+  $("user-email").textContent = session.user.email;
+  show(true);
+  await loadCreators();
+});
+
+function show(loggedIn) {
+  $("login").classList.toggle("hidden", loggedIn);
+  $("app").classList.toggle("hidden", !loggedIn);
+  $("userbar").classList.toggle("hidden", !loggedIn);
+}
+
+async function loadCreators() {
+  const { data, error } = await db
+    .from("creators")
+    .select("tier,handle,platform,followers,proven_promoter,email,email_quality,bio")
+    .order("tier", { ascending: true })
+    .order("followers", { ascending: false })
+    .limit(500);
+  if (error) {
+    // RLS 擋下＝帳號不在許可清單：誠實顯示，不留空白
+    $("rows").innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="empty-title">No access</div><div class="caption">${error.message} — 這個帳號不在早期存取名單。</div></div></td></tr>`;
+    return;
+  }
+  allRows = data || [];
+  render();
+}
+
+function render() {
+  const rows = activeTier ? allRows.filter(r => r.tier === activeTier) : allRows;
+  $("m-usable").textContent = allRows.filter(r => r.email_quality === "OK").length;
+  $("m-a").textContent = allRows.filter(r => r.tier === "A").length;
+  $("m-date").textContent = "2026-08-02";
+  $("row-count").textContent = `${rows.length} creators shown`;
+  $("rows").innerHTML = rows.length ? rows.map(r => `
+    <tr>
+      <td><span class="tier tier-${(r.tier || "c").toLowerCase()}">${r.tier}</span></td>
+      <td><b>${esc(r.handle)}</b></td>
+      <td>${esc(r.platform)}</td>
+      <td class="mono">${(r.followers || 0).toLocaleString()}</td>
+      <td class="ev"><span class="caption">${esc(r.proven_promoter ? "promoted: " + r.proven_promoter : (r.bio || "").slice(0, 90))}</span></td>
+      <td>${contactBadge(r.email_quality)}</td>
+    </tr>`).join("") :
+    `<tr><td colspan="6"><div class="empty-state"><div class="empty-title">No creators in this tier yet</div></div></td></tr>`;
+}
+
+function contactBadge(q) {
+  if (q === "OK") return `<span class="badge badge-success">Verified</span>`;
+  if (q === "NONE") return `<span class="badge badge-neutral">No email</span>`;
+  return `<span class="badge badge-warning">${esc(q)}</span>`;
+}
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+document.querySelectorAll(".tier-filter").forEach(b => b.onclick = () => {
+  document.querySelectorAll(".tier-filter").forEach(x => x.setAttribute("aria-pressed", "false"));
+  b.setAttribute("aria-pressed", "true");
+  activeTier = b.dataset.tier;
+  render();
+});
+</script>
+</body>
+</html>
